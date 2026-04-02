@@ -342,20 +342,24 @@ export function createMcpServer(): Server {
           return await handleListCaseUpdates(args ?? {}, startTime);
         case 'compare_entities_litigation':
           return await handleCompareEntitiesLitigation(args ?? {}, startTime);
-        default:
+        default: {
+          const unknownErr = errorResult(name, `Unknown tool: ${name}`);
           return {
-            content: [{ type: 'text' as const, text: `Unknown tool: ${name}` }],
-            structuredContent: errorResult(name, `Unknown tool: ${name}`),
-            isError: true,
+            content: [{ type: 'text' as const, text: JSON.stringify(unknownErr) }],
+            structuredContent: unknownErr,
           };
+        }
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       logger.error('Tool handler error', { tool: name, err });
+      // Do NOT set isError:true — the MCP SDK strips structuredContent when isError is set,
+      // causing CTP's outputSchema validator to see undefined instead of an object.
+      // The error is encoded in the structuredContent payload via the 'error' field.
+      const errContent = errorResult(name, message);
       return {
-        content: [{ type: 'text' as const, text: `Error: ${message}` }],
-        structuredContent: errorResult(name, message),
-        isError: true,
+        content: [{ type: 'text' as const, text: JSON.stringify(errContent) }],
+        structuredContent: errContent,
       };
     }
   });
