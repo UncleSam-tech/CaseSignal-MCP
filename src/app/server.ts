@@ -20,6 +20,10 @@ try {
 
 const app = express();
 
+// Trust Render's load balancer so express-rate-limit reads the real client IP
+// from X-Forwarded-For instead of the internal proxy IP.
+app.set('trust proxy', 1);
+
 app.use(helmet());
 
 // Apply JSON body parsing everywhere EXCEPT /mcp and /messages.
