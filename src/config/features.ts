@@ -26,20 +26,18 @@ export const RISK_SCORE_WEIGHTS = {
 export type RiskDriverKey = keyof typeof RISK_SCORE_WEIGHTS;
 
 export const RISK_BANDS = {
-  CRITICAL: 80,
-  HIGH: 60,
-  MEDIUM: 40,
-  LOW: 20,
+  HIGH: 80,
+  ELEVATED: 60,
+  MODERATE: 40,
 } as const;
 
-export type RiskBand = 'critical' | 'high' | 'medium' | 'low' | 'minimal';
+export type RiskBand = 'high' | 'elevated' | 'moderate' | 'low';
 
 export function scoreToriskBand(score: number): RiskBand {
-  if (score >= RISK_BANDS.CRITICAL) return 'critical';
   if (score >= RISK_BANDS.HIGH) return 'high';
-  if (score >= RISK_BANDS.MEDIUM) return 'medium';
-  if (score >= RISK_BANDS.LOW) return 'low';
-  return 'minimal';
+  if (score >= RISK_BANDS.ELEVATED) return 'elevated';
+  if (score >= RISK_BANDS.MODERATE) return 'moderate';
+  return 'low';
 }
 
 export const MAX_ENTITIES_COMPARE = 5;

@@ -24,7 +24,7 @@ function makeDocket(overrides: Partial<InternalDocket> = {}): InternalDocket {
 describe('computeRiskScore', () => {
   it('returns minimal risk for empty dockets', () => {
     const result = computeRiskScore([], 'Acme');
-    expect(result.riskBand).toBe('minimal');
+    expect(result.riskBand).toBe('low');
     expect(result.riskScore).toBe(0);
     expect(result.scoreDrivers.length).toBeGreaterThan(0);
   });

@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const RiskBandSchema = z.enum(['critical', 'high', 'medium', 'low', 'minimal']);
+export const RiskBandSchema = z.enum(['high', 'elevated', 'moderate', 'low']);
 export type RiskBand = z.infer<typeof RiskBandSchema>;
 
 export const ScoreDriverSchema = z.object({

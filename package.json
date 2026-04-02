@@ -15,9 +15,11 @@
     "test:contract": "vitest run --config vitest.contract.config.ts",
     "db:migrate": "tsx scripts/migrate.ts",
     "db:seed": "tsx scripts/seed-aliases.ts",
+    "db:refresh-snapshots": "tsx scripts/refreshSnapshots.ts",
     "lint": "tsc --noEmit"
   },
   "dependencies": {
+    "@ctxprotocol/sdk": "^0.9.0",
     "@modelcontextprotocol/sdk": "^1.12.0",
     "bullmq": "^5.0.0",
     "dotenv": "^16.0.0",
@@ -37,6 +39,7 @@
     "@types/supertest": "^6.0.0",
     "@types/uuid": "^10.0.0",
     "@vitest/coverage-v8": "^2.0.0",
+    "ajv": "^8.18.0",
     "supertest": "^7.0.0",
     "tsx": "^4.0.0",
     "typescript": "^5.4.0",

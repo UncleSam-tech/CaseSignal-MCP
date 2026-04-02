@@ -101,7 +101,7 @@ export function computeRiskScore(
 ): RiskOutput {
   if (dockets.length === 0) {
     return {
-      riskBand: 'minimal',
+      riskBand: 'low',
       riskScore: 0,
       scoreDrivers: [
         {

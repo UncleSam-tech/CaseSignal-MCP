@@ -63,13 +63,13 @@ describe('FreshnessSchema', () => {
 describe('RiskOutputSchema', () => {
   it('parses valid risk output', () => {
     const result = RiskOutputSchema.parse({
-      riskBand: 'medium',
+      riskBand: 'moderate',
       riskScore: 45,
       scoreDrivers: [
         { category: 'active_case_count', label: 'active case count', impact: 0.12, evidence: '2 active cases' },
       ],
     });
-    expect(result.riskBand).toBe('medium');
+    expect(result.riskBand).toBe('moderate');
   });
 
   it('rejects riskScore out of range', () => {
