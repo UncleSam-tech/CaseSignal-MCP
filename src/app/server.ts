@@ -178,6 +178,18 @@ setInterval(() => {
 }, 600_000); // 10 minutes
 
 export async function startServer(): Promise<void> {
+  // Run DB migrations on every startup — idempotent, safe to re-run.
+  // This guarantees tables exist whether deploying fresh or restarting.
+  try {
+    const { runMigrations } = await import('../db/migrate.js');
+    logger.info('Running database migrations...');
+    await runMigrations(process.env['DATABASE_URL'] ?? '');
+    logger.info('Database migrations complete');
+  } catch (err) {
+    // Log but don't crash — DB might be temporarily unavailable at cold start
+    logger.error('Migration error on startup (non-fatal)', { err });
+  }
+
   try {
     const { testDbConnection } = await import('../db/client.js');
     const { testRedisConnection } = await import('../services/cache/redis.js');
