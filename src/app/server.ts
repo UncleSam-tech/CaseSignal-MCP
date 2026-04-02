@@ -21,7 +21,14 @@ try {
 const app = express();
 
 app.use(helmet());
-app.use(express.json({ limit: '1mb' }));
+
+// Apply JSON body parsing everywhere EXCEPT /mcp and /messages.
+// The StreamableHTTPServerTransport must read the raw request stream itself —
+// if express.json() consumes it first the transport throws "stream is not readable".
+app.use((req: Request, res: Response, next: NextFunction) => {
+  if (req.path === '/mcp' || req.path === '/messages') return next();
+  express.json({ limit: '1mb' })(req, res, next);
+});
 
 // ─── Rate limiter ──────────────────────────────────────────────
 const mcpLimiter = rateLimit({
@@ -124,7 +131,9 @@ app.post('/mcp', mcpLimiter, async (req: Request, res: Response) => {
       sessionIdGenerator: undefined,
     });
     await server.connect(transport);
-    await transport.handleRequest(req, res, req.body);
+    // Do NOT pass req.body — let the transport read the raw stream directly.
+    // express.json() is excluded from /mcp so the stream is still readable here.
+    await transport.handleRequest(req, res);
   } catch (err) {
     logger.error('MCP handler error', { err });
     if (!res.headersSent) {
