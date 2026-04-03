@@ -2,17 +2,15 @@ import { CONFIDENCE_BANDS, scoreToband, type ConfidenceBand } from '../../config
 import { normalizeName, type NormalizedName, type EntityType } from './normalizeName.js';
 import type { Confidence } from '../../schemas/shared/confidence.js';
 
-/** Jaccard similarity between two token sets */
-function jaccardSimilarity(a: string[], b: string[]): number {
-  if (a.length === 0 && b.length === 0) return 1;
-  const setA = new Set(a);
-  const setB = new Set(b);
+/** Percentage of query tokens found in candidate tokens */
+function tokenOverlapCoverage(queryTokens: string[], candidateTokens: string[]): number {
+  if (queryTokens.length === 0) return 1;
+  const setCandidate = new Set(candidateTokens);
   let intersection = 0;
-  for (const token of setA) {
-    if (setB.has(token)) intersection++;
+  for (const token of queryTokens) {
+    if (setCandidate.has(token)) intersection++;
   }
-  const union = new Set([...setA, ...setB]).size;
-  return union === 0 ? 0 : intersection / union;
+  return intersection / queryTokens.length;
 }
 
 export type ScoredMatch = {
@@ -27,7 +25,7 @@ export function scoreMatch(
   aliasBonus = 0
 ): ScoredMatch {
   const candidateNormalized = normalizeName(candidateName, entityType);
-  const overlap = jaccardSimilarity(queryNormalized.tokens, candidateNormalized.tokens);
+  const overlap = tokenOverlapCoverage(queryNormalized.tokens, candidateNormalized.tokens);
 
   let score: number;
   let reason: string;
