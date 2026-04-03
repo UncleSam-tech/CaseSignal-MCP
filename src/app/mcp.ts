@@ -63,7 +63,16 @@ const TOOLS = [
         limitations: { type: 'array', items: { type: 'string' }, description: 'Can be empty array.' },
         searchExhausted: { type: 'boolean', description: 'True if search returned 0 results. Signals to stop retrying.' },
         noResultsReason: { type: 'string', description: 'Reason for empty cases, e.g. "no_matching_data". Can be missing.' },
-        freshness: { type: 'object', description: 'Cache freshness info. sourceUpdatedAt may be null legitimately.' },
+        freshness: {
+          type: 'object',
+          properties: {
+            generatedAt: { type: 'string' },
+            sourceUpdatedAt: { type: ['string', 'null'], description: 'Can legitimately be null if no recent case exists' },
+            snapshotAgeSeconds: { type: 'number' },
+          },
+          required: ['generatedAt', 'snapshotAgeSeconds'],
+          description: 'sourceUpdatedAt may be null legitimately.',
+        },
         _meta: { type: 'object' },
       },
       required: ['normalizedQuery', 'entityType', 'totalFound', 'cases', 'limitations', 'freshness', '_meta'],
@@ -116,7 +125,16 @@ const TOOLS = [
         inferredFields: { type: 'array', items: { type: 'string' } },
         confidence: { type: 'object' },
         limitations: { type: 'array', items: { type: 'string' } },
-        freshness: { type: 'object' },
+        freshness: {
+          type: 'object',
+          properties: {
+            generatedAt: { type: 'string' },
+            sourceUpdatedAt: { type: ['string', 'null'], description: 'Can legitimately be null if no recent case exists' },
+            snapshotAgeSeconds: { type: 'number' },
+          },
+          required: ['generatedAt', 'snapshotAgeSeconds'],
+          description: 'sourceUpdatedAt may be null legitimately.',
+        },
         _meta: { type: 'object' },
       },
       required: ['caseId', 'caseName', 'summary', 'freshness', '_meta'],
@@ -181,7 +199,16 @@ const TOOLS = [
         limitations: { type: 'array', items: { type: 'string' }, description: 'Can be empty' },
         searchExhausted: { type: 'boolean', description: 'True if 0 cases found. DO NOT RETRY.' },
         noResultsReason: { type: 'string', description: 'Reason for empty cases, e.g. "no_matching_data"' },
-        freshness: { type: 'object', description: 'sourceUpdatedAt may be null legitimately.' },
+        freshness: {
+          type: 'object',
+          properties: {
+            generatedAt: { type: 'string' },
+            sourceUpdatedAt: { type: ['string', 'null'], description: 'Can legitimately be null if no recent case exists' },
+            snapshotAgeSeconds: { type: 'number' },
+          },
+          required: ['generatedAt', 'snapshotAgeSeconds'],
+          description: 'sourceUpdatedAt may be null legitimately.',
+        },
         _meta: { type: 'object' },
       },
       required: [
@@ -235,7 +262,16 @@ const TOOLS = [
         totalUpdates: { type: 'number' },
         daysBack: { type: 'number' },
         limitations: { type: 'array', items: { type: 'string' } },
-        freshness: { type: 'object' },
+        freshness: {
+          type: 'object',
+          properties: {
+            generatedAt: { type: 'string' },
+            sourceUpdatedAt: { type: ['string', 'null'], description: 'Can legitimately be null if no recent case exists' },
+            snapshotAgeSeconds: { type: 'number' },
+          },
+          required: ['generatedAt', 'snapshotAgeSeconds'],
+          description: 'sourceUpdatedAt may be null legitimately.',
+        },
         _meta: { type: 'object' },
       },
       required: ['caseId', 'caseName', 'updates', 'freshness', '_meta'],
@@ -283,7 +319,16 @@ const TOOLS = [
         comparisonSummary: { type: 'string' },
         highestRiskEntity: { type: 'string', nullable: true },
         limitations: { type: 'array', items: { type: 'string' } },
-        freshness: { type: 'object' },
+        freshness: {
+          type: 'object',
+          properties: {
+            generatedAt: { type: 'string' },
+            sourceUpdatedAt: { type: ['string', 'null'], description: 'Can legitimately be null if no recent case exists' },
+            snapshotAgeSeconds: { type: 'number' },
+          },
+          required: ['generatedAt', 'snapshotAgeSeconds'],
+          description: 'sourceUpdatedAt may be null legitimately.',
+        },
         _meta: { type: 'object' },
       },
       required: ['entities', 'comparisonSummary', 'limitations', 'freshness', '_meta'],
@@ -562,6 +607,12 @@ async function handleCompareEntitiesLitigation(
       )
     )
   );
+
+  const allRejected = results.every((r) => r.status === 'rejected');
+  if (allRejected) {
+    const firstReason = (results[0] as PromiseRejectedResult).reason;
+    throw new Error(`Failed to retrieve data for all requested entities. Upstream error: ${firstReason?.message || String(firstReason)}`);
+  }
 
   const summaries = entities.map((name, i) => {
     const r = results[i];
