@@ -20,6 +20,8 @@ export const ListCaseUpdatesOutputSchema = z.object({
   updates: z.array(CaseUpdateSchema),
   totalUpdates: z.number().int().nonnegative(),
   daysBack: z.number().int().positive(),
+  searchExhausted: z.boolean().optional(),
+  noResultsReason: z.string().nullable().optional(),
   limitations: z.array(z.string()),
   freshness: FreshnessSchema,
   _meta: ToolMetaSchema,

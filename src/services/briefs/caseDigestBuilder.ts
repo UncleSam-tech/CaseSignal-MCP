@@ -24,8 +24,15 @@ export async function buildCaseDigest(params: {
 
   const [rawDocket, partiesRes, entriesRes] = await Promise.all([
     getDocket(docketId),
-    includeParties ? getDocketParties(docketId) : Promise.resolve(null),
-    getDocketEntries(docketId, { limit: maxRecentEntries }),
+    includeParties 
+      ? getDocketParties(docketId).catch(() => null) 
+      : Promise.resolve(null),
+    getDocketEntries(docketId, { limit: maxRecentEntries }).catch((err: any) => {
+      if (err?.upstreamStatus === 403 || err?.message?.includes('403')) {
+        return { count: 0, next: null, results: [], isRestricted: true };
+      }
+      throw err;
+    }),
   ]);
 
   const docket = transformDocket(rawDocket);
@@ -54,8 +61,11 @@ export async function buildCaseDigest(params: {
   const posture = inferPosture(rawDocket.date_terminated, latestEntry?.description ?? null);
 
   const limitations: string[] = [];
-  if (!partiesRes) limitations.push('Party information not requested');
-  if (entriesRes.count > maxRecentEntries) {
+  const isRestricted = (entriesRes as any).isRestricted === true;
+  if (!partiesRes) limitations.push('Party information not requested or unavailable');
+  if (isRestricted) {
+    limitations.push('Docket entries restricted by CourtListener (403)');
+  } else if (entriesRes.count > maxRecentEntries) {
     limitations.push(`Showing ${maxRecentEntries} of ${entriesRes.count} total docket entries`);
   }
   if (!rawDocket.assigned_to_str) limitations.push('Judge information unavailable in source');
@@ -78,6 +88,8 @@ export async function buildCaseDigest(params: {
     isOpen: docket.isOpen,
     latestActivityDate,
     latestActivitySummary,
+    searchExhausted: isRestricted ? true : undefined,
+    noResultsReason: isRestricted ? 'access_restricted' : undefined,
     recentEntries: entries.map((e) => ({
       entryNumber: e.entryNumber,
       dateFiled: e.dateFiled,

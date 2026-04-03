@@ -32,6 +32,11 @@ export function registerListCaseUpdates(server: McpServer): void {
           orderBy: '-date_filed',
           limit: input.max_updates,
           after: afterDate,
+        }).catch((err: any) => {
+          if (err?.upstreamStatus === 403 || err?.message?.includes('403')) {
+            return { count: 0, next: null, results: [], isRestricted: true };
+          }
+          throw err;
         }),
       ]);
 
@@ -46,7 +51,10 @@ export function registerListCaseUpdates(server: McpServer): void {
       };
 
       const limitations: string[] = [];
-      if (entriesRes.count > input.max_updates) {
+      const isRestricted = (entriesRes as any).isRestricted === true;
+      if (isRestricted) {
+        limitations.push('Docket entries restricted by CourtListener (403)');
+      } else if (entriesRes.count > input.max_updates) {
         limitations.push(
           `Showing ${input.max_updates} of ${entriesRes.count} entries in the last ${input.days_back} days`
         );
@@ -67,6 +75,8 @@ export function registerListCaseUpdates(server: McpServer): void {
         })),
         totalUpdates: entries.length,
         daysBack: input.days_back,
+        searchExhausted: isRestricted ? true : undefined,
+        noResultsReason: isRestricted ? 'access_restricted' : undefined,
         limitations,
         freshness,
         _meta: buildMeta(TOOL_NAME, startTime, 'none'),

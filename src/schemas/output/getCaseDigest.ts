@@ -49,6 +49,8 @@ export const GetCaseDigestOutputSchema = z.object({
   isOpen: z.boolean(),
   latestActivityDate: z.string().nullable(),
   latestActivitySummary: z.string().nullable(),
+  searchExhausted: z.boolean().optional(),
+  noResultsReason: z.string().nullable().optional(),
   recentEntries: z.array(DocketEntrySchema),
   deadlines: z.array(DeadlineSchema),
   parties: z.array(PartySchema),
