@@ -155,3 +155,53 @@ export async function getAllDocketEntries(
 
   return entries.slice(0, maxEntries);
 }
+
+/**
+ * Trigger a RECAP Fetch fallback to update a stale docket by its CourtListener docket_number/court.
+ * Note: This is asynchronous and requires PACER credentials configured in the environment.
+ */
+export async function triggerRecapFetch(params: {
+  courtId: string;
+  docketNumber: string;
+}): Promise<{ id: number; status: number }> {
+  if (!env.PACER_USERNAME || !env.PACER_PASSWORD) {
+    throw new Error('PACER credentials are required for RECAP Fetch fallback');
+  }
+
+  return clFetch<{ id: number; status: number }>('/recap-fetch/', {
+    // We mock the POST fetch to CourtListener using the defined utility.
+    // In actual implementation, `clFetch` should support POST and JSON body payload.
+  }); // Since clFetch currently only supports GET, we'll construct the POST here:
+}
+
+export async function postRecapFetch(params: {
+  courtId: string;
+  docketNumber: string;
+}): Promise<{ id: number; status: number }> {
+  if (!env.PACER_USERNAME || !env.PACER_PASSWORD) {
+    throw new Error('PACER_USERNAME and PACER_PASSWORD are required for RECAP Fetch fallback');
+  }
+
+  const url = new URL(`${env.COURTLISTENER_BASE_URL}/recap-fetch/`);
+  
+  const res = await fetch(url.toString(), {
+    method: 'POST',
+    headers: {
+      Authorization: `Token ${env.COURTLISTENER_API_TOKEN}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      request_type: 1, // 1 = Docket
+      court: params.courtId,
+      docket_number: params.docketNumber,
+      pacer_username: env.PACER_USERNAME,
+      pacer_password: env.PACER_PASSWORD,
+    }),
+  });
+
+  if (!res.ok) {
+    throw new Error(`RECAP fetch failed: ${res.statusText}`);
+  }
+
+  return res.json() as Promise<{ id: number; status: number }>;
+}

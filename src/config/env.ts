@@ -54,6 +54,7 @@ const EnvSchema = z.object({
     .string()
     .transform((v) => v !== 'false')
     .default('true'),
+
 });
 
 const parsed = EnvSchema.safeParse(process.env);
