@@ -47,31 +47,35 @@ export function registerSearchEntityLitigation(server: McpServer): void {
         snapshotAgeSeconds: 0,
       };
 
+      const limitations = raw.count > input.max_cases
+        ? [`Showing ${input.max_cases} of ${raw.count} total results. Increase max_cases to retrieve more.`]
+        : [];
+
+      const searchExhausted = filtered.length === 0;
+      const noResultsReason = searchExhausted ? 'no_matching_data' : undefined;
+
       const output = SearchEntityLitigationOutputSchema.parse({
-        data: {
-          normalizedQuery: normalized.canonical,
-          entityType: input.entity_type,
-          totalFound: filtered.length,
-          cases: filtered.map((s) => ({
-            caseId: s.caseId,
-            caseNumber: s.caseNumber,
-            caseName: s.caseName,
-            courtId: s.courtId,
-            courtName: s.courtName,
-            filedDate: s.filedDate,
-            terminatedDate: s.terminatedDate,
-            isOpen: s.isOpen,
-            partyRole: null,
-            matchConfidence: s.matchConfidence,
-            matchReason: s.matchReason,
-            fieldOrigin: 'observed' as const,
-            sourceUpdatedAt: null,
-          })),
-          limitations:
-            raw.count > input.max_cases
-              ? [`Showing ${input.max_cases} of ${raw.count} total results. Increase max_cases to retrieve more.`]
-              : [],
-        },
+        normalizedQuery: normalized.canonical,
+        entityType: input.entity_type,
+        totalFound: raw.count > 0 ? filtered.length : 0,
+        cases: filtered.map((s) => ({
+          caseId: s.caseId,
+          caseNumber: s.caseNumber,
+          caseName: s.caseName,
+          courtId: s.courtId,
+          courtName: s.courtName,
+          filedDate: s.filedDate,
+          terminatedDate: s.terminatedDate,
+          isOpen: s.isOpen,
+          partyRole: null,
+          matchConfidence: s.matchConfidence,
+          matchReason: s.matchReason,
+          fieldOrigin: 'observed' as const,
+          sourceUpdatedAt: null,
+        })),
+        limitations,
+        searchExhausted,
+        noResultsReason,
         freshness,
         _meta: buildMeta(TOOL_NAME, startTime, 'none'),
       });

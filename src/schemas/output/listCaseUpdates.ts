@@ -13,16 +13,14 @@ const CaseUpdateSchema = z.object({
 });
 
 export const ListCaseUpdatesOutputSchema = z.object({
-  data: z.object({
-    caseId: z.string(),
-    caseName: z.string(),
-    caseNumber: z.string(),
-    courtName: z.string(),
-    updates: z.array(CaseUpdateSchema),
-    totalUpdates: z.number().int().nonnegative(),
-    daysBack: z.number().int().positive(),
-    limitations: z.array(z.string()),
-  }),
+  caseId: z.string(),
+  caseName: z.string(),
+  caseNumber: z.string(),
+  courtName: z.string(),
+  updates: z.array(CaseUpdateSchema),
+  totalUpdates: z.number().int().nonnegative(),
+  daysBack: z.number().int().positive(),
+  limitations: z.array(z.string()),
   freshness: FreshnessSchema,
   _meta: ToolMetaSchema,
 });

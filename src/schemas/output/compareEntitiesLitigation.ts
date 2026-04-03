@@ -19,12 +19,10 @@ const EntitySummarySchema = z.object({
 });
 
 export const CompareEntitiesLitigationOutputSchema = z.object({
-  data: z.object({
-    entities: z.array(EntitySummarySchema),
-    comparisonSummary: z.string(),
-    highestRiskEntity: z.string().nullable(),
-    limitations: z.array(z.string()),
-  }),
+  entities: z.array(EntitySummarySchema),
+  comparisonSummary: z.string(),
+  highestRiskEntity: z.string().nullable(),
+  limitations: z.array(z.string()),
   freshness: FreshnessSchema,
   _meta: ToolMetaSchema,
 });

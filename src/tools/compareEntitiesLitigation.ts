@@ -54,7 +54,7 @@ export function registerCompareEntitiesLitigation(server: McpServer): void {
           };
         }
 
-        const brief = result.value.data;
+        const brief = result.value;
         const mostRecent = brief.notableCases[0]?.filedDate ?? null;
 
         return {
@@ -83,15 +83,13 @@ export function registerCompareEntitiesLitigation(server: McpServer): void {
       };
 
       const output = CompareEntitiesLitigationOutputSchema.parse({
-        data: {
-          entities: summaries,
-          comparisonSummary: buildComparisonSummary(sorted),
-          highestRiskEntity: highest?.entityName ?? null,
-          limitations: [
-            'Comparison is based on available federal court data only.',
-            'Risk scores are heuristic indicators, not legal assessments.',
-          ],
-        },
+        entities: summaries,
+        comparisonSummary: buildComparisonSummary(sorted),
+        highestRiskEntity: highest?.entityName ?? null,
+        limitations: [
+          'Comparison is based on available federal court data only.',
+          'Risk scores are heuristic indicators, not legal assessments.',
+        ],
         freshness,
         _meta: buildMeta(TOOL_NAME, startTime, 'none'),
       });

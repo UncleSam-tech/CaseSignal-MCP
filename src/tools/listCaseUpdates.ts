@@ -53,23 +53,21 @@ export function registerListCaseUpdates(server: McpServer): void {
       }
 
       const output = ListCaseUpdatesOutputSchema.parse({
-        data: {
-          caseId: docket.caseId,
-          caseName: docket.caseName,
-          caseNumber: docket.caseNumber,
-          courtName: docket.courtName,
-          updates: entries.map((e) => ({
-            entryNumber: e.entryNumber,
-            dateFiled: e.dateFiled,
-            updateType: classifyEntryType(e.description),
-            digest: e.description.slice(0, 300),
-            documentCount: e.documentCount,
-            origin: e.origin,
-          })),
-          totalUpdates: entries.length,
-          daysBack: input.days_back,
-          limitations,
-        },
+        caseId: docket.caseId,
+        caseName: docket.caseName,
+        caseNumber: docket.caseNumber,
+        courtName: docket.courtName,
+        updates: entries.map((e) => ({
+          entryNumber: e.entryNumber,
+          dateFiled: e.dateFiled,
+          updateType: classifyEntryType(e.description),
+          digest: e.description.slice(0, 300),
+          documentCount: e.documentCount,
+          origin: e.origin,
+        })),
+        totalUpdates: entries.length,
+        daysBack: input.days_back,
+        limitations,
         freshness,
         _meta: buildMeta(TOOL_NAME, startTime, 'none'),
       });

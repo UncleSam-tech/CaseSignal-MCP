@@ -21,13 +21,13 @@ const CaseMatchSchema = z.object({
 });
 
 export const SearchEntityLitigationOutputSchema = z.object({
-  data: z.object({
     normalizedQuery: z.string(),
     entityType: z.enum(['company', 'person', 'auto']),
     totalFound: z.number().int().nonnegative(),
-    cases: z.array(CaseMatchSchema),
+    cases: z.array(CaseMatchSchema).describe("Array of results. Empty array if no matches found."),
     limitations: z.array(z.string()),
-  }),
+    searchExhausted: z.boolean().optional().describe("True if search returned 0 results and no more cases exist."),
+    noResultsReason: z.string().optional().describe("Reason for empty cases, e.g. 'no_matching_data'."),
   freshness: FreshnessSchema,
   _meta: ToolMetaSchema,
 });

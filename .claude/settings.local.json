@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm install:*)",
+      "Bash(npm --version)",
+      "Bash(npm install:*)",
+      "Bash(npm test:*)",
+      "WebFetch(domain:www.courtlistener.com)",
+      "Bash(npm run:*)",
+      "Bash(node -e \"const sdk = require\\(''@modelcontextprotocol/sdk/server/streamableHttp.js''\\); console.log\\(Object.keys\\(sdk\\)\\)\")",
+      "WebFetch(domain:docs.ctxprotocol.com)",
+      "Bash(grep -r \"EntityQuery\\\\|ResolvedEntity\" '/c/Users/DAVID/Documents/SB/CaseSignal MCP/src' --include=*.ts)",
+      "Bash(gh repo:*)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:github.com)",
+      "Bash(node -e \"const sdk = require\\(''@ctxprotocol/sdk''\\); console.log\\(Object.keys\\(sdk\\)\\)\")"
+    ]
+  }
+}

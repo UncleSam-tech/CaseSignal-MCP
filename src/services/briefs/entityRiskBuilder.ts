@@ -127,29 +127,31 @@ export async function buildEntityRiskBrief(
     snapshotAgeSeconds: 0,
   };
 
+  const searchExhausted = topScored.length === 0;
+
   const output: GetEntityRiskBriefOutput = {
-    data: {
-      entityName: input.entity_name,
-      entityNameNormalized: normalized.canonical,
-      entityType: input.entity_type,
-      overallAssessment: buildAssessment(riskOutput.riskBand, dockets.length, input.entity_name),
-      riskBand: riskOutput.riskBand,
-      riskScore: riskOutput.riskScore,
-      scoreDrivers: riskOutput.scoreDrivers,
-      topConcerns: riskOutput.scoreDrivers
-        .filter((d) => d.impact > 0.05)
-        .map((d) => `${d.label}: ${d.evidence}`),
-      notableCases,
-      recentDevelopments: buildRecentDevelopments(dockets),
-      watchItems: [],
-      totalCasesFound: topScored.length,
-      activeCases: dockets.filter((d) => d.isOpen).length,
-      confidence: {
-        score: Math.round(overallConfidenceScore * 1000) / 1000,
-        band: scoreToband(overallConfidenceScore),
-      },
-      limitations,
+    entityName: input.entity_name,
+    entityNameNormalized: normalized.canonical,
+    entityType: input.entity_type,
+    overallAssessment: buildAssessment(riskOutput.riskBand, dockets.length, input.entity_name),
+    riskBand: riskOutput.riskBand,
+    riskScore: riskOutput.riskScore,
+    scoreDrivers: riskOutput.scoreDrivers,
+    topConcerns: riskOutput.scoreDrivers
+      .filter((d) => d.impact > 0.05)
+      .map((d) => `${d.label}: ${d.evidence}`),
+    notableCases,
+    recentDevelopments: buildRecentDevelopments(dockets),
+    watchItems: [],
+    totalCasesFound: topScored.length,
+    activeCases: dockets.filter((d) => d.isOpen).length,
+    confidence: {
+      score: Math.round(overallConfidenceScore * 1000) / 1000,
+      band: scoreToband(overallConfidenceScore),
     },
+    limitations,
+    searchExhausted,
+    noResultsReason: searchExhausted ? 'no_matching_data' : undefined,
     freshness,
     _meta: { ...meta, cacheHit: false, cacheLayer: 'none' },
   };

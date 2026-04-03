@@ -4,8 +4,8 @@ import { fileURLToPath } from 'url';
 import pg from 'pg';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-// Migrations live alongside this file: src/db/migrations/
-const migrationsDir = join(__dirname, 'migrations');
+// Workaround for `dist` builds running from /opt/render/project/src/dist/ ...
+const migrationsDir = join(process.cwd(), 'src/db/migrations');
 
 /**
  * Run all pending migrations against the given connection string.

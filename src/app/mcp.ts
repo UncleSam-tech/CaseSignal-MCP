@@ -23,7 +23,7 @@ const TOOLS = [
   {
     name: 'search_entity_litigation',
     description:
-      'Find likely federal cases involving a company or person. Returns ranked case matches with confidence scores, match reasons, and freshness metadata.',
+      'Find likely federal cases involving a company or person. Returns ranked case matches with confidence scores. IMPORTANT: ZERO RETRIES. If cases array is empty or searchExhausted=true, this is the final definitive answer. Do not retry with name variations.',
     _meta: {
       surface: 'query',
       queryEligible: true,
@@ -59,8 +59,10 @@ const TOOLS = [
         normalizedQuery: { type: 'string' },
         entityType: { type: 'string' },
         totalFound: { type: 'number' },
-        cases: { type: 'array', items: { type: 'object' } },
+        cases: { type: 'array', items: { type: 'object' }, description: 'Array of results. Empty array if no matches found.' },
         limitations: { type: 'array', items: { type: 'string' } },
+        searchExhausted: { type: 'boolean', description: 'True if search returned 0 results. Signals to stop retrying.' },
+        noResultsReason: { type: 'string', description: 'Reason for empty cases, e.g. "no_matching_data"' },
         freshness: { type: 'object' },
         _meta: { type: 'object' },
       },
@@ -123,7 +125,7 @@ const TOOLS = [
   {
     name: 'get_entity_risk_brief',
     description:
-      'Flagship tool. Returns a complete federal litigation risk brief for a company or person — risk band, risk score (0-100), score drivers, top concerns, notable cases, recent developments, watch items, confidence, and freshness. Replaces manual PACER/CourtListener workflow.',
+      'Flagship tool. Returns a complete federal litigation risk brief for a company or person — risk band, risk score (0-100), top concerns, and confidence. IMPORTANT: ZERO RETRIES. If notableCases is empty or searchExhausted=true, do not retry.',
     _meta: {
       surface: 'query',
       queryEligible: true,
@@ -177,6 +179,8 @@ const TOOLS = [
         activeCases: { type: 'number' },
         confidence: { type: 'object' },
         limitations: { type: 'array', items: { type: 'string' } },
+        searchExhausted: { type: 'boolean', description: 'True if 0 cases found. DO NOT RETRY.' },
+        noResultsReason: { type: 'string', description: 'Reason for empty cases, e.g. "no_matching_data"' },
         freshness: { type: 'object' },
         _meta: { type: 'object' },
       },
@@ -300,11 +304,11 @@ function errorResult(toolName: string, message: string): Record<string, unknown>
 
   switch (toolName) {
     case 'search_entity_litigation':
-      return { ...base, normalizedQuery: '', entityType: 'auto', totalFound: 0, cases: [] };
+      return { ...base, normalizedQuery: '', entityType: 'auto', totalFound: 0, cases: [], searchExhausted: true, noResultsReason: message };
     case 'get_case_digest':
       return { ...base, caseId: '', caseName: '', caseNumber: '', courtName: '', summary: `Error: ${message}`, currentPosture: 'unknown', recentEntries: [], deadlines: [], parties: [], counsel: [], inferredFields: [], confidence: { score: 0, band: 'excluded' }, isOpen: false, filedDate: null, terminatedDate: null };
     case 'get_entity_risk_brief':
-      return { ...base, entityName: '', entityNameNormalized: '', entityType: 'auto', overallAssessment: `Error: ${message}`, riskBand: 'low', riskScore: 0, scoreDrivers: [], topConcerns: [], notableCases: [], recentDevelopments: [], watchItems: [], totalCasesFound: 0, activeCases: 0, confidence: { score: 0, band: 'excluded' } };
+      return { ...base, entityName: '', entityNameNormalized: '', entityType: 'auto', overallAssessment: `Error: ${message}`, riskBand: 'low', riskScore: 0, scoreDrivers: [], topConcerns: [], notableCases: [], recentDevelopments: [], watchItems: [], totalCasesFound: 0, activeCases: 0, confidence: { score: 0, band: 'excluded' }, searchExhausted: true, noResultsReason: message };
     case 'list_case_updates':
       return { ...base, caseId: '', caseName: '', caseNumber: '', courtName: '', updates: [], totalUpdates: 0, daysBack: 0 };
     case 'compare_entities_litigation':
@@ -460,7 +464,7 @@ async function handleGetCaseDigest(args: Record<string, unknown>, startTime: num
   await setSnapshot(entityKey, toolName, output);
 
   // Flatten for structuredContent
-  const result = { ...output.data, freshness: output.freshness, _meta: output._meta };
+  const result = output;
   return {
     content: [{ type: 'text' as const, text: JSON.stringify(result) }],
     structuredContent: result as unknown as Record<string, unknown>,
@@ -482,7 +486,7 @@ async function handleGetEntityRiskBrief(args: Record<string, unknown>, startTime
     meta
   );
 
-  const result = { ...output.data, freshness: output.freshness, _meta: output._meta };
+  const result = output;
   return {
     content: [{ type: 'text' as const, text: JSON.stringify(result) }],
     structuredContent: result as unknown as Record<string, unknown>,
@@ -574,7 +578,7 @@ async function handleCompareEntitiesLitigation(
         limitations: [`Failed to retrieve data for "${name}"`],
       };
     }
-    const b = r.value.data;
+    const b = r.value;
     return {
       entityName: b.entityName,
       entityNameNormalized: b.entityNameNormalized,
