@@ -418,6 +418,8 @@ async function handleSearchEntityLitigation(
       fieldOrigin: 'observed' as const,
       sourceUpdatedAt: null,
     })),
+    searchExhausted: filtered.length === 0,
+    noResultsReason: filtered.length === 0 ? 'no_matching_data' : undefined,
     limitations:
       raw.count > maxCases
         ? [`Showing ${maxCases} of ${raw.count} total results`]
