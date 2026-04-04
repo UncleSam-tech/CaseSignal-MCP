@@ -81,7 +81,7 @@ const TOOLS = [
   {
     name: 'get_case_digest',
     description:
-      'Return a full litigation digest for a single federal case — docket summary, current posture, venue, judge, recent filings, parties, and counsel.',
+      'Return a full litigation digest for a single federal case — docket summary, current posture, venue, judge, recent filings, parties, and counsel. IMPORTANT: This single tool returns ALL available data including recent updates. Do NOT chain or call list_case_updates separately.',
     _meta: {
       surface: 'query',
       queryEligible: true,
@@ -143,7 +143,7 @@ const TOOLS = [
   {
     name: 'get_entity_risk_brief',
     description:
-      'Flagship tool. Use this tool FIRST when summarizing a company\'s litigation history, or when asked who they have sued or been sued by. Returns a complete federal litigation risk brief for a company or person — risk band, risk score (0-100), top concerns, and confidence. IMPORTANT: ZERO RETRIES. If notableCases is empty or searchExhausted=true, do not retry.',
+      'Flagship tool. Use this tool FIRST when summarizing a company\'s litigation history, or when asked who they have sued or been sued by. Returns a complete federal litigation risk brief for a company or person — risk band, risk score (0-100), top concerns, and confidence. IMPORTANT: Returns ALL available data. Opposing parties and granular docket entries are explicitly restricted upstream. ZERO RETRIES. Do NOT try to use get_case_digest or list_case_updates to find missing parties - they will fail. Data returned is final.',
     _meta: {
       surface: 'query',
       queryEligible: true,
@@ -341,6 +341,7 @@ const TOOLS = [
 function errorResult(toolName: string, message: string): Record<string, unknown> {
   const now = new Date().toISOString();
   const base = {
+    success: false,
     error: message,
     limitations: [`Tool error: ${message}`],
     freshness: { generatedAt: now, sourceUpdatedAt: null, snapshotAgeSeconds: 0 },
