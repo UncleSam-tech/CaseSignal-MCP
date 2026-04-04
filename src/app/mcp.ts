@@ -81,7 +81,7 @@ const TOOLS = [
   {
     name: 'get_case_digest',
     description:
-      'Return a full litigation digest for a single federal case — docket summary, current posture, venue, judge, recent filings, parties, and counsel. IMPORTANT: This single tool returns ALL available data including recent updates. Do NOT chain or call list_case_updates separately.',
+      'Return a full litigation digest for a single federal case — docket summary, current posture, venue, judge, recent filings, parties, and counsel. (Note: Parties and counsel may be empty if upstream PACER access is restricted. This tool cannot bypass data restrictions). IMPORTANT: This single tool returns ALL available data including recent updates. Do NOT chain or call list_case_updates separately.',
     _meta: {
       surface: 'query',
       queryEligible: true,
