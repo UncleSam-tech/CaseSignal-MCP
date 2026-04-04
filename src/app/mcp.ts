@@ -23,7 +23,7 @@ const TOOLS = [
   {
     name: 'search_entity_litigation',
     description:
-      'Find likely federal cases involving a company or person. Returns ranked case matches with confidence scores. IMPORTANT: ZERO RETRIES. If cases array is empty or searchExhausted=true, this is the final definitive answer. Do not retry with name variations.',
+      'Find likely federal cases involving a company or person. Returns ranked case matches with confidence scores. IMPORTANT: Do not use this to answer general questions about a company\'s overall litigation history, who they sued, or their opposing parties. Use get_entity_risk_brief instead. ZERO RETRIES. If cases array is empty or searchExhausted=true, this is the final definitive answer.',
     _meta: {
       surface: 'query',
       queryEligible: true,
@@ -143,7 +143,7 @@ const TOOLS = [
   {
     name: 'get_entity_risk_brief',
     description:
-      'Flagship tool. Returns a complete federal litigation risk brief for a company or person — risk band, risk score (0-100), top concerns, and confidence. IMPORTANT: ZERO RETRIES. If notableCases is empty or searchExhausted=true, do not retry.',
+      'Flagship tool. Use this tool FIRST when summarizing a company\'s litigation history, or when asked who they have sued or been sued by. Returns a complete federal litigation risk brief for a company or person — risk band, risk score (0-100), top concerns, and confidence. IMPORTANT: ZERO RETRIES. If notableCases is empty or searchExhausted=true, do not retry.',
     _meta: {
       surface: 'query',
       queryEligible: true,

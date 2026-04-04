@@ -17,7 +17,7 @@ export function registerSearchEntityLitigation(server: McpServer): void {
     {
       title: 'Search Entity Litigation',
       description:
-        'Find likely federal cases involving a company or person. Returns ranked case matches with confidence scores.',
+        'Find likely federal cases involving a company or person. Returns ranked case matches with confidence scores. IMPORTANT: Do not use this to answer general questions about a company\'s overall litigation history, who they sued, or their opposing parties. Use get_entity_risk_brief instead.',
       inputSchema: SearchEntityLitigationInputSchema,
       outputSchema: SearchEntityLitigationOutputSchema,
     },

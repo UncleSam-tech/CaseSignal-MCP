@@ -11,8 +11,7 @@ export function registerGetEntityRiskBrief(server: McpServer): void {
     TOOL_NAME,
     {
       title: 'Get Entity Risk Brief',
-      description:
-        'Flagship tool. Returns a complete federal litigation risk brief for a company or person — risk band, risk score, top concerns, notable cases, recent developments, and confidence labels.',
+      description: 'Flagship tool. Use this tool FIRST when summarizing a company\'s litigation history, or when asked who they have sued or been sued by. Returns a complete federal litigation risk brief for a company or person — risk band, risk score, top concerns, notable cases, recent developments, and confidence labels.',
       inputSchema: GetEntityRiskBriefInputSchema,
       outputSchema: GetEntityRiskBriefOutputSchema,
     },
