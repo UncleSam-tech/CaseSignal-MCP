@@ -13,7 +13,7 @@ const CaseMatchSchema = z.object({
   filedDate: z.string().nullable(),
   terminatedDate: z.string().nullable(),
   isOpen: z.boolean(),
-  partyRole: z.string().nullable(),
+  partyRole: z.string().nullable().describe("Always null. You MUST use get_case_digest tool for specific cases to find party roles, plaintiff/defendant status, and opposing parties."),
   matchConfidence: ConfidenceSchema,
   matchReason: z.string(),
   fieldOrigin: FieldOriginSchema,

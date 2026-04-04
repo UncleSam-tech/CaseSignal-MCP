@@ -401,7 +401,7 @@ export function createMcpServer(): Server {
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      logger.error('Tool handler error', { tool: name, err });
+      logger.error('Tool handler error', { tool: name, error: message, stack: err instanceof Error ? err.stack : undefined });
       // Do NOT set isError:true — the MCP SDK strips structuredContent when isError is set,
       // causing CTP's outputSchema validator to see undefined instead of an object.
       // The error is encoded in the structuredContent payload via the 'error' field.

@@ -10,7 +10,7 @@ let refreshQueue: Queue<RefreshJobData> | null = null;
 
 function getQueue(): Queue<RefreshJobData> {
   if (!refreshQueue) {
-    refreshQueue = new Queue<RefreshJobData>('cs:refresh', {
+    refreshQueue = new Queue<RefreshJobData>('cs-refresh', {
       connection: getRedisClient(),
       defaultJobOptions: {
         attempts: 2,

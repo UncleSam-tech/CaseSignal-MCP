@@ -12,7 +12,7 @@ let fetchQueue: Queue<FetchJobData> | null = null;
 
 function getQueue(): Queue<FetchJobData> {
   if (!fetchQueue) {
-    fetchQueue = new Queue<FetchJobData>('cs:fetch', {
+    fetchQueue = new Queue<FetchJobData>('cs-fetch', {
       connection: getRedisClient(),
       defaultJobOptions: {
         attempts: 3,
