@@ -61,14 +61,29 @@ export type InternalDocketSummary = {
   searchScore: number;
 };
 
+export function formatCourtId(courtId: string): string {
+  if (!courtId) return 'Unknown Court';
+  const id = courtId.toLowerCase();
+  // e.g. "cand" -> District Court, CA N.D.
+  if (id.length >= 4 && id.match(/^[a-z]{2}(nd|sd|ed|wd|md|cd)$/)) {
+     const state = id.slice(0, 2).toUpperCase();
+     const dist = id.slice(2, 4).toUpperCase().split('').join('.') + '.';
+     return `District Court, ${state} ${dist}`;
+  }
+  return id.toUpperCase() + ' Court';
+}
+
 export function transformDocket(raw: CLDocket): InternalDocket {
+  const isUrl = raw.court && raw.court.includes('http');
+  const humanCourtName = isUrl ? formatCourtId(raw.court_id) : raw.court;
+
   return {
     caseId: String(raw.id),
     docketId: raw.id,
     caseNumber: raw.docket_number,
     caseName: raw.case_name || raw.case_name_short || 'Unknown',
     courtId: raw.court_id,
-    courtName: raw.court,
+    courtName: humanCourtName,
     filedDate: raw.date_filed ?? null,
     terminatedDate: raw.date_terminated ?? null,
     isOpen: raw.date_terminated === null,

@@ -22,9 +22,12 @@ export function registerListCaseUpdates(server: McpServer): void {
       const startTime = Date.now();
       const docketId = parseInt(input.case_id, 10);
 
-      const cutoff = new Date();
-      cutoff.setDate(cutoff.getDate() - input.days_back);
-      const afterDate = cutoff.toISOString().split('T')[0]!;
+      let afterDate: string | undefined;
+      if (input.days_back !== undefined) {
+        const cutoff = new Date();
+        cutoff.setDate(cutoff.getDate() - input.days_back);
+        afterDate = cutoff.toISOString().split('T')[0]!;
+      }
 
       const [rawDocket, entriesRes] = await Promise.all([
         getDocket(docketId),
@@ -55,9 +58,11 @@ export function registerListCaseUpdates(server: McpServer): void {
       if (isRestricted) {
         limitations.push('Docket entries restricted by CourtListener (403)');
       } else if (entriesRes.count > input.max_updates) {
-        limitations.push(
-          `Showing ${input.max_updates} of ${entriesRes.count} entries in the last ${input.days_back} days`
-        );
+        if (input.days_back !== undefined) {
+          limitations.push(`Showing ${input.max_updates} of ${entriesRes.count} entries in the last ${input.days_back} days`);
+        } else {
+          limitations.push(`Showing newest ${input.max_updates} of ${entriesRes.count} total entries`);
+        }
       }
 
       const output = ListCaseUpdatesOutputSchema.parse({
@@ -74,7 +79,7 @@ export function registerListCaseUpdates(server: McpServer): void {
           origin: e.origin,
         })),
         totalUpdates: entries.length,
-        daysBack: input.days_back,
+        daysBack: input.days_back ?? 0,
         searchExhausted: isRestricted ? true : undefined,
         noResultsReason: isRestricted ? 'access_restricted' : undefined,
         limitations,

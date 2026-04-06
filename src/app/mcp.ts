@@ -34,7 +34,7 @@ const TOOLS = [
         maxConcurrency: 5,
         notes: 'Limited by CourtListener API rate limits.',
       },
-      pricing: { executeUsd: '0.00' },
+      pricing: { executeUsd: '0.02' },
     },
     inputSchema: {
       type: 'object' as const,
@@ -91,7 +91,7 @@ const TOOLS = [
         cooldownMs: 2000,
         maxConcurrency: 5,
       },
-      pricing: { executeUsd: '0.00' },
+      pricing: { executeUsd: '0.02' },
     },
     inputSchema: {
       type: 'object' as const,
@@ -154,7 +154,7 @@ const TOOLS = [
         maxConcurrency: 2,
         notes: 'Runs full entity resolution + multi-docket fetch pipeline.',
       },
-      pricing: { executeUsd: '0.00' },
+      pricing: { executeUsd: '0.02' },
     },
     inputSchema: {
       type: 'object' as const,
@@ -240,13 +240,13 @@ const TOOLS = [
         cooldownMs: 1000,
         maxConcurrency: 10,
       },
-      pricing: { executeUsd: '0.00' },
+      pricing: { executeUsd: '0.02' },
     },
     inputSchema: {
       type: 'object' as const,
       properties: {
         case_id: { type: 'string', description: 'CourtListener docket ID' },
-        days_back: { type: 'number', default: 30 },
+        days_back: { type: 'number', description: 'Number of days back to search. Omit to fetch latest updates regardless of date.' },
         max_updates: { type: 'number', default: 20 },
       },
       required: ['case_id'],
@@ -291,7 +291,7 @@ const TOOLS = [
         maxConcurrency: 1,
         notes: 'Runs a full risk brief pipeline per entity in parallel.',
       },
-      pricing: { executeUsd: '0.00' },
+      pricing: { executeUsd: '0.02' },
     },
     inputSchema: {
       type: 'object' as const,
@@ -544,12 +544,15 @@ async function handleGetEntityRiskBrief(args: Record<string, unknown>, startTime
 async function handleListCaseUpdates(args: Record<string, unknown>, startTime: number) {
   const caseId = String(args['case_id'] ?? '');
   const docketId = parseInt(caseId, 10);
-  const daysBack = Number(args['days_back'] ?? 30);
+  const daysBack = args['days_back'] !== undefined ? Number(args['days_back']) : undefined;
   const maxUpdates = Number(args['max_updates'] ?? 20);
 
-  const cutoff = new Date();
-  cutoff.setDate(cutoff.getDate() - daysBack);
-  const afterDate = cutoff.toISOString().split('T')[0]!;
+  let afterDate: string | undefined;
+  if (daysBack !== undefined) {
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - daysBack);
+    afterDate = cutoff.toISOString().split('T')[0]!;
+  }
 
   const [rawDocket, entriesRes] = await Promise.all([
     getDocket(docketId),
@@ -573,7 +576,7 @@ async function handleListCaseUpdates(args: Record<string, unknown>, startTime: n
       origin: 'observed' as const,
     })),
     totalUpdates: entriesRes.results.length,
-    daysBack,
+    daysBack: daysBack ?? 0,
     limitations:
       entriesRes.count > maxUpdates
         ? [`Showing ${maxUpdates} of ${entriesRes.count} entries`]
