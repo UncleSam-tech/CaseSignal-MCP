@@ -559,7 +559,7 @@ async function handleListCaseUpdates(args: Record<string, unknown>, startTime: n
   const rawDocket = await getDocket(docketId);
   const now = new Date().toISOString();
 
-  let entriesRes = { count: 0, next: null as string | null, previous: null as string | null, results: [] as any[] };
+  let entriesRes = { count: 0, next: null as string | null, results: [] as any[] };
   let isRestricted = false;
 
   try {
