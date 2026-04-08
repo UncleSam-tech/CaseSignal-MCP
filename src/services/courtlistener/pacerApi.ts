@@ -119,7 +119,7 @@ export async function getDocket(docketId: number): Promise<CLDocket> {
 
 export async function getDocketParties(docketId: number): Promise<CLPartiesResponse> {
   return clFetch<CLPartiesResponse>('/parties/', {
-    docket: String(docketId),
+    docket_id: String(docketId),
     limit: '100',
   });
 }
@@ -129,7 +129,7 @@ export async function getDocketEntries(
   opts?: { orderBy?: string; limit?: number; after?: string }
 ): Promise<CLDocketEntriesResponse> {
   const p: Record<string, string> = {
-    docket: String(docketId),
+    docket_id: String(docketId),
     order_by: opts?.orderBy ?? '-date_filed',
     limit: String(opts?.limit ?? 20),
   };

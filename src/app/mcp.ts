@@ -570,9 +570,9 @@ async function handleListCaseUpdates(args: Record<string, unknown>, startTime: n
     updates: entriesRes.results.map((e) => ({
       entryNumber: e.entry_number,
       dateFiled: e.date_filed,
-      updateType: classifyEntryType(e.description),
-      digest: e.description.slice(0, 300),
-      documentCount: e.recap_documents.length,
+      updateType: classifyEntryType(e.description || ''),
+      digest: (e.description || '(no description)').slice(0, 300),
+      documentCount: e.recap_documents?.length ?? 0,
       origin: 'observed' as const,
     })),
     totalUpdates: entriesRes.results.length,

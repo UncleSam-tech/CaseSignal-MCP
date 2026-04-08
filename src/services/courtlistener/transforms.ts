@@ -118,19 +118,22 @@ export function transformDocketEntry(raw: CLDocketEntry): InternalEntry {
     entryNumber: raw.entry_number,
     dateFiled: raw.date_filed,
     description: raw.description || '(no description)',
-    documentCount: raw.recap_documents.length,
+    documentCount: raw.recap_documents?.length ?? 0,
     origin: 'observed',
   };
 }
 
 export function transformSearchHit(raw: CLSearchHit): InternalDocketSummary {
+  const isUrl = raw.court && raw.court.includes('http');
+  const humanCourtName = isUrl ? formatCourtId(raw.court_id) : raw.court;
+
   return {
     caseId: String(raw.docket_id),
     docketId: raw.docket_id,
     caseNumber: raw.docketNumber,
     caseName: raw.caseName,
     courtId: raw.court_id,
-    courtName: raw.court,
+    courtName: humanCourtName,
     filedDate: raw.dateFiled ?? null,
     terminatedDate: raw.dateTerminated ?? null,
     isOpen: raw.dateTerminated === null,
