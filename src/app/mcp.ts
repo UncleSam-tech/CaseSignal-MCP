@@ -261,6 +261,8 @@ const TOOLS = [
         updates: { type: 'array', items: { type: 'object' } },
         totalUpdates: { type: 'number' },
         daysBack: { type: 'number' },
+        searchExhausted: { type: 'boolean', description: 'True if 0 updates are found or access is restricted. DO NOT RETRY.' },
+        noResultsReason: { type: 'string', description: 'Reason for empty updates, e.g. "access_restricted" if CourtListener blocks access (403)' },
         limitations: { type: 'array', items: { type: 'string' } },
         freshness: {
           type: 'object',
@@ -554,13 +556,26 @@ async function handleListCaseUpdates(args: Record<string, unknown>, startTime: n
     afterDate = cutoff.toISOString().split('T')[0]!;
   }
 
-  const [rawDocket, entriesRes] = await Promise.all([
-    getDocket(docketId),
-    getDocketEntries(docketId, { orderBy: '-date_filed', limit: maxUpdates, after: afterDate }),
-  ]);
+  const rawDocket = await getDocket(docketId);
+  const now = new Date().toISOString();
+
+  let entriesRes = { count: 0, next: null as string | null, previous: null as string | null, results: [] as any[] };
+  let isRestricted = false;
+
+  try {
+    entriesRes = await getDocketEntries(docketId, { orderBy: '-date_filed', limit: maxUpdates, after: afterDate });
+  } catch (err: any) {
+    if (err?.upstreamStatus === 403 || err?.message?.includes('403')) {
+      isRestricted = true;
+    } else {
+      throw err;
+    }
+  }
 
   const docket = transformDocket(rawDocket);
-  const now = new Date().toISOString();
+
+  const limitations = entriesRes.count > maxUpdates ? [`Showing ${maxUpdates} of ${entriesRes.count} entries`] : [];
+  if (isRestricted) limitations.push('Docket entries restricted by CourtListener (403)');
 
   const result = {
     caseId: docket.caseId,
@@ -577,10 +592,9 @@ async function handleListCaseUpdates(args: Record<string, unknown>, startTime: n
     })),
     totalUpdates: entriesRes.results.length,
     daysBack: daysBack ?? 0,
-    limitations:
-      entriesRes.count > maxUpdates
-        ? [`Showing ${maxUpdates} of ${entriesRes.count} entries`]
-        : [],
+    searchExhausted: isRestricted || entriesRes.results.length === 0,
+    noResultsReason: isRestricted ? 'access_restricted' : (entriesRes.results.length === 0 ? 'no_matching_data' : undefined),
+    limitations,
     freshness: {
       generatedAt: now,
       sourceUpdatedAt: rawDocket.date_modified,
